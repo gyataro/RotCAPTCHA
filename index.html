@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie-edge">
+  <link rel="stylesheet" href="./index.css">
+  <title>RotCAPTCHA</title>
+</head>
+
+<body>
+  <input type="hidden" id="rotcaptcha-token" value="">
+  <div id="rotcaptcha-container">
+    <label for="rotcaptcha-slider">Slide to rotate image upright.</label>
+    <img id="rotcaptcha-image" src="./test.jpg" />
+    <div id="rotcaptcha-slider">
+      <div id="rotcaptcha-track"></div>
+      <button id="rotcaptcha-thumb">
+        <img id="rotcaptcha-thumb-icon" src='./arrow.svg'>
+      </button>
+    </div>
+  </div>
+  <textarea id="rotcaptcha-response" name="rotcaptcha-response" style="display:none;"></textarea>
+</body>
+
+<script>
+  const image = document.getElementById("rotcaptcha-image");
+  const container = document.getElementById("rotcaptcha-container");
+  const sliderTrack = document.getElementById("rotcaptcha-track");
+  const sliderThumb = document.getElementById("rotcaptcha-thumb");
+  const sliderRange = sliderTrack.offsetWidth - sliderThumb.offsetWidth;
+  let isThumbMoving = false;
+  let sliderValue = 0;
+  let startX = 0;
+
+  const startThumb = (event) => {
+    event.preventDefault();
+    isThumbMoving = true;
+    startX = event.type.startsWith("touch") ? event.touches[0].clientX : event.clientX;
+  }
+  const moveThumb = (event) => {
+    if (!isThumbMoving) return;
+    event.preventDefault();
+    var currX = event.type.startsWith("touch") ? event.touches[0].clientX : event.clientX;
+    update(currX - startX);
+    startX = currX;
+  }
+  const stopThumb = (event) => {
+    event.preventDefault();
+    isThumbMoving = false;
+  }
+  const shiftThumb = (event) => {
+    switch (event.key) {
+      case "ArrowDown":
+      case "ArrowRight":
+        update(2);
+        break;
+      case "ArrowUp":
+      case "ArrowLeft":
+        update(-2);
+        break;
+      default:
+        return
+    }
+  }
+  const update = (offset) => {
+    sliderValue = Math.min(Math.max(sliderValue + offset, 0), sliderRange);
+    var rotateAngle = sliderValue / sliderRange * 360
+    sliderThumb.style.transform = `translate(${sliderValue}px)`;
+    image.style.transform = `rotate(${rotateAngle}deg)`;
+  }
+
+  sliderThumb.addEventListener("touchstart", startThumb);
+  container.addEventListener("touchmove", moveThumb);
+  container.addEventListener("touchend", stopThumb);
+
+  sliderThumb.addEventListener("mousedown", startThumb);
+  container.addEventListener("mousemove", moveThumb);
+  container.addEventListener("mouseup", stopThumb);
+
+  sliderThumb.addEventListener("keydown", shiftThumb);
+</script>
+
+</html>
